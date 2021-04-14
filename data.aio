@@ -1,0 +1,5 @@
+int a = 0;
+const char b = "test";
+const float c = 10.0;
+const int r = 0;
+log("Hello");

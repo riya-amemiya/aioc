@@ -1,0 +1,103 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> keyword
+Rule 1     keyword -> NAME NUMBER SEMI LBRACE RBRACE STRING FN FNL FNR
+
+Terminals, with rules where they appear
+
+FN                   : 1
+FNL                  : 1
+FNR                  : 1
+LBRACE               : 1
+NAME                 : 1
+NUMBER               : 1
+RBRACE               : 1
+SEMI                 : 1
+STRING               : 1
+error                : 
+
+Nonterminals, with rules where they appear
+
+keyword              : 0
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . keyword
+    (1) keyword -> . NAME NUMBER SEMI LBRACE RBRACE STRING FN FNL FNR
+
+    NAME            shift and go to state 2
+
+    keyword                        shift and go to state 1
+
+state 1
+
+    (0) S' -> keyword .
+
+
+
+state 2
+
+    (1) keyword -> NAME . NUMBER SEMI LBRACE RBRACE STRING FN FNL FNR
+
+    NUMBER          shift and go to state 3
+
+
+state 3
+
+    (1) keyword -> NAME NUMBER . SEMI LBRACE RBRACE STRING FN FNL FNR
+
+    SEMI            shift and go to state 4
+
+
+state 4
+
+    (1) keyword -> NAME NUMBER SEMI . LBRACE RBRACE STRING FN FNL FNR
+
+    LBRACE          shift and go to state 5
+
+
+state 5
+
+    (1) keyword -> NAME NUMBER SEMI LBRACE . RBRACE STRING FN FNL FNR
+
+    RBRACE          shift and go to state 6
+
+
+state 6
+
+    (1) keyword -> NAME NUMBER SEMI LBRACE RBRACE . STRING FN FNL FNR
+
+    STRING          shift and go to state 7
+
+
+state 7
+
+    (1) keyword -> NAME NUMBER SEMI LBRACE RBRACE STRING . FN FNL FNR
+
+    FN              shift and go to state 8
+
+
+state 8
+
+    (1) keyword -> NAME NUMBER SEMI LBRACE RBRACE STRING FN . FNL FNR
+
+    FNL             shift and go to state 9
+
+
+state 9
+
+    (1) keyword -> NAME NUMBER SEMI LBRACE RBRACE STRING FN FNL . FNR
+
+    FNR             shift and go to state 10
+
+
+state 10
+
+    (1) keyword -> NAME NUMBER SEMI LBRACE RBRACE STRING FN FNL FNR .
+
+    $end            reduce using rule 1 (keyword -> NAME NUMBER SEMI LBRACE RBRACE STRING FN FNL FNR .)
+
