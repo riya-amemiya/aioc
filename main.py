@@ -16,6 +16,7 @@ tokens = (
     'FLOAT',
     'NUMBER_FLOAT',
     'CONST',
+    'COMMENT'
 )
 
 # t_STRING = '"[a-zA-Z][a-zA-Z0-9]*"'
@@ -28,7 +29,6 @@ t_SEMI = ';'
 t_FNL = '\)'
 t_FNR = '\('
 t_EQUAL = '='
-t_ignore_COMMENT = '/\*[\s\S]*?\*/|//.*'
 t_ignore = ' '
 t_NAME = '[a-zA-Z][a-zA-Z0-9]*'
 
@@ -61,7 +61,7 @@ def t_INT(t):
 def t_COMMENT(t):
     """/\*[\s\S]*?\*/|//.*"""
     t.lexer.lineno += t.value.count('\n')
-    pass
+    return t
 
 
 def t_newline(t):
