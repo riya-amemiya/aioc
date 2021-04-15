@@ -16,21 +16,60 @@ tokens = (
     'FLOAT',
     'NUMBER_FLOAT',
     'CONST',
-    'COMMENT'
+    'COMMENT',
+    'SHORTLOG',
+    'FN',
+    'RETURN',
+    'END',
+    'VOID',
+    'ASTERISK',
+    'PERCENT',
+    'SLASH',
+    'PLUS',
+    'MINUS',
+    'IF',
+    'DOUBLEEQUAL'
 )
 
 # t_STRING = '"[a-zA-Z][a-zA-Z0-9]*"'
 t_STRING = '"[^\t\n\r\f\v]*"'
-t_NUMBER = '[0-9.edED+-]+'
-t_NUMBER_FLOAT = "[0-9.edED+-]+\.[0-9.edED+-]+"
+t_ASTERISK = '\*'
+t_PERCENT = '%'
+t_SLASH = '/'
+t_PLUS = '\+'
+t_MINUS = '-'
+t_NUMBER = '[0-9]+'
+t_NUMBER_FLOAT = "[0-9]+\.[0-9]+"
 t_LBRACE = '{'
 t_RBRACE = '}'
 t_SEMI = ';'
 t_FNL = '\)'
 t_FNR = '\('
+t_FN = ':'
+t_DOUBLEEQUAL = "=="
 t_EQUAL = '='
-t_ignore = ' '
+t_ignore = ' \t'
 t_NAME = '[a-zA-Z][a-zA-Z0-9]*'
+
+
+def t_IF(t):
+    r"""if"""
+    return t
+
+
+def t_VOID(t):
+    r"""void"""
+    return t
+
+
+def t_END(t):
+    r"""end"""
+    return t
+
+
+def t_RETURN(t):
+    r"""return"""
+    return t
 
 
 def t_CONST(t):
@@ -50,6 +89,11 @@ def t_CHAR(t):
 
 def t_LOG(t):
     r"""log"""
+    return t
+
+
+def t_SHORTLOG(t):
+    r"""l"""
     return t
 
 
@@ -79,7 +123,7 @@ lexer = lex.lex()
 
 
 def lex_test():
-    f = open('data.aio', 'r')
+    f = open('data.aioc', 'r')
     data = f.read()
     f.close()
 
