@@ -29,6 +29,29 @@ def p_log(p):
     global tab
     log.LOG(p,tab,a)
 
+def p_input(p):
+    """expression : NAME EQUAL INPUT FNR STRING FNL
+    """
+    global tab
+    if a == "javascript":
+        p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[4]}" + "{"
+    elif a == "python":
+        p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}{p[4]}{p[5]}{p[6]}"
+    elif a == "ruby":
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}"
+
+def p_if(p):
+    """expression : IF expression DOUBLEEQUAL expression FN
+                  | IF expression DOUBLEEQUAL expression LBRACE
+    """
+    global tab
+    if a == "javascript":
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}" + "{"
+    elif a == "python":
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}:"
+    elif a == "ruby":
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}"
+    tab += 1
 def p_expression_binop(p):
     """expression : expression PLUS expression
                   | expression MINUS expression
@@ -50,6 +73,10 @@ def p_expression_binop(p):
 def p_expression_number(p):
     """expression : NUMBER"""
     p[0] = int(p[1])
+
+def p_string(p):
+    """expression : STRING"""
+    p[0] = p[1]
 
 def p_char(p):
     """expression : CHAR NAME EQUAL STRING SEMI
@@ -81,6 +108,14 @@ def p_fn(p):
                   | FLOAT NAME FNR FNL LBRACE
                   | VOID NAME FNR FNL FN
                   | VOID NAME FNR FNL LBRACE
+                  | INT NAME FNR expression FNL FN
+                  | INT NAME FNR expression FNL LBRACE
+                  | CHAR NAME FNR expression FNL FN
+                  | CHAR NAME FNR expression FNL LBRACE
+                  | FLOAT NAME FNR expression FNL FN
+                  | FLOAT NAME FNR expression FNL LBRACE
+                  | VOID NAME FNR expression FNL FN
+                  | VOID NAME FNR expression FNL LBRACE
     """
     global tab
     global funtype
@@ -88,11 +123,30 @@ def p_fn(p):
     function.FUN(p,tab,a)
     tab += 1
 
-def p_return(p):
-    """expression : RETURN NUMBER SEMI
-                  | RETURN STRING SEMI
-                  | RETURN NUMBER_FLOAT SEMI
+def p_variable(p):
+    """expression : INT NAME
+                  | INT NAME COMMA expression
+                  | INT NAME EQUAL NUMBER
+                  | INT NAME EQUAL NUMBER COMMA expression
     """
+    try:
+        if a == "javascript":
+            p[0] = f"{p[2]}{p[3]}{p[4]}"
+        elif a == "python":
+            p[0] = f"{p[2]}{p[3]}{p[4]}"
+        elif a == "ruby":
+            p[0] = f"{p[2]}{p[3]}{p[4]}"
+    except:
+        if a == "javascript":
+            p[0] = f"{p[2]}"
+        elif a == "python":
+            p[0] = f"{p[2]}"
+        elif a == "ruby":
+            p[0] = f"{p[2]}"
+
+
+def p_return(p):
+    """expression : RETURN expression SEMI"""
     global tab
     global funtype
     RETURN.RETURN(p, tab, a,funtype)

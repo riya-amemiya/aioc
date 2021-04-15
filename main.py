@@ -28,7 +28,9 @@ tokens = (
     'PLUS',
     'MINUS',
     'IF',
-    'DOUBLEEQUAL'
+    'DOUBLEEQUAL',
+    'COMMA',
+    'INPUT'
 )
 
 # t_STRING = '"[a-zA-Z][a-zA-Z0-9]*"'
@@ -50,6 +52,12 @@ t_DOUBLEEQUAL = "=="
 t_EQUAL = '='
 t_ignore = ' \t'
 t_NAME = '[a-zA-Z][a-zA-Z0-9]*'
+t_COMMA = ','
+
+
+def t_INPUT(t):
+    r"""input"""
+    return t
 
 
 def t_IF(t):
