@@ -1,1 +1,5 @@
-a = input("Hello")
+def a():
+    print("Hello")
+
+
+a()

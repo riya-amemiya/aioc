@@ -7,38 +7,78 @@ import sys
 a = "javascript"
 tab = 0
 funtype = "void"
+funs = {}
 precedence = (    #計算の優先順位を決める
     ('left', 'PLUS', 'MINUS'),
     ('right', 'ASTERISK','SLASH'),
     ('right', 'PERCENT')
 )
 try:
-    a = sys.argv[1]
+    if sys.argv[1] == "js":
+        a = "javascript"
+    elif sys.argv[1] == "rb":
+        a = "ruby"
+    elif sys.argv[1] == "py":
+        a = "python"
+    else:
+        a  = sys.argv[1]
 except:
     print("Javascript")
 # exit function
 def p_log(p):
     """expression : LOG FNR STRING FNL SEMI
                   | FNR STRING FNL SEMI
-                  | SHORTLOG STRING
+                  | SHORTLOG STRING SEMI
                   | LOG FNR expression FNL SEMI
                   | FNR expression FNL SEMI
-                  | SHORTLOG expression
+                  | SHORTLOG expression SEMI
     """
 
     global tab
     log.LOG(p,tab,a)
 
 def p_input(p):
-    """expression : NAME EQUAL INPUT FNR STRING FNL
+    """expression : INT NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CONST INT NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CONST CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CONST FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
     """
     global tab
-    if a == "javascript":
-        p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[4]}" + "{"
-    elif a == "python":
-        p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}{p[4]}{p[5]}{p[6]}"
-    elif a == "ruby":
-        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}"
+    if p[1] != "const":
+        #p[0] = "\t" * tab + f"let {p[2]} {p[3]} {p[4]}{p[5]}"
+        if a == "javascript":
+            p[4] = f"window.prompt({p[6]}, "");"
+        elif a == "python":
+            p[4] = f"{p[4]}{p[5]}{p[6]}{p[7]}"
+        elif a == "ruby":
+            p[4] = f"gets.chomp"
+            p[5] = f"puts {p[6]}\n"
+            if p[1] == "int":
+                p[4] += ".to_i"
+        if p[1] == "int":
+            Int.INT(p,tab,a)
+        elif p[1] == "char":
+            char.CHAR(p, tab, a)
+        elif p[1] == "float":
+            float.FLOAT(p,tab,a)
+    else:
+        if a == "javascript":
+            p[5] = f"window.prompt({p[7]}, "");"
+        elif a == "python":
+            p[5] = f"{p[5]}{p[6]}{p[7]}{p[8]}"
+        elif a == "ruby":
+            p[5] = f"gets.chomp"
+            p[6] = f"puts {p[7]}\n"
+            if p[2] == "int":
+                p[5] += ".to_i"
+        if p[2] == "int":
+            Int.INT(p, tab, a)
+        elif p[1] == "char":
+            char.CHAR(p, tab, a)
+        elif p[1] == "float":
+            float.FLOAT(p, tab, a)
 
 def p_if(p):
     """expression : IF expression DOUBLEEQUAL expression FN
@@ -59,23 +99,29 @@ def p_expression_binop(p):
                   | expression SLASH expression
                   | expression PERCENT expression
     """
-    if p[2] == '+':
-        p[0] = p[1] + p[3]
-    elif p[2] == '-':
-        p[0] = p[1] - p[3]
-    elif p[2] == '*':
-        p[0] = p[1] * p[3]
-    elif p[2] == '/':
-        p[0] = p[1] / p[3]
-    elif p[2] == '%':
-        p[0] = p[1] % p[3]
+    try:
+        int(p[3]);
+        if p[2] == '+':
+            p[0] = p[1] + p[3]
+        elif p[2] == '-':
+            p[0] = p[1] - p[3]
+        elif p[2] == '*':
+            p[0] = p[1] * p[3]
+        elif p[2] == '/':
+            p[0] = p[1] / p[3]
+        elif p[2] == '%':
+            p[0] = p[1] % p[3]
+    except:
+        p[0] = f"{p[1]}{p[2]}{p[3]}"
 
 def p_expression_number(p):
     """expression : NUMBER"""
     p[0] = int(p[1])
 
 def p_string(p):
-    """expression : STRING"""
+    """expression : STRING
+                  | NAME
+    """
     p[0] = p[1]
 
 def p_char(p):
@@ -119,6 +165,8 @@ def p_fn(p):
     """
     global tab
     global funtype
+    global funs
+    funs[p[2]] = [p[1],p[4] if p[4] != ")" else ""]
     funtype = p[1]
     function.FUN(p,tab,a)
     tab += 1
@@ -161,6 +209,29 @@ def p_rbrace(p):
         p[0] = "\t" * tab + f""
     elif a == "ruby":
         p[0] = "\t" * tab + f"end"
+def p_cfn(p):
+    """expression : NAME FNR FNL SEMI
+                  | NAME FNR expression FNL SEMI
+    """
+    global tab
+    tab -= 1
+    for n in funs:
+        if funs[n][1] and p[3] == ")":
+            print(f"警告!\n引数{funs[n][1]}が渡されてません!")
+    if funs[n][1] and p[3] == ")":
+        if a == "javascript":
+            p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
+        elif a == "python":
+            p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
+        elif a == "ruby":
+            p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
+    else:
+        if a == "javascript":
+            p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}{p[4]}"
+        elif a == "python":
+            p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}{p[4]}"
+        elif a == "ruby":
+            p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}{p[4]}"
 
 def p_comment(p):
     """expression : COMMENT"""

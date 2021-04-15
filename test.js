@@ -1,3 +1,1 @@
-if 1=="1"{
-	console.log("Hello");
-}
+a=window.prompt("Hello", "");

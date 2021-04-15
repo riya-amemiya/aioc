@@ -1,3 +1,2 @@
-if 1=="1"
-	puts ("Hello")
-end
+puts "Hello"
+A = gets.chomp.to_i

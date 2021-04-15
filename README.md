@@ -11,6 +11,8 @@ Cの型とRubyの混ぜてスパイスにJavaScriptを隠し味にPythonを加�
 
 セミコンが必須
 
+四則演算はコンパイル時に計算
+
 ## チュートリアル
 ### Hello World
 ```text
@@ -43,4 +45,37 @@ log("Hello");("World");
 //good
 log("Hello");
 ("World");
+```
+
+### 関数はまるでRubyでPython
+```text
+int a(int b){
+    log(b);
+    return 0;
+}
+/*or*/
+int a(int b):
+    log(b);
+    return 0;
+}
+/*or*/
+int a(int b):
+    log(b);
+    return 0;
+end
+/*or*/
+int a(int b){
+    log(b);
+    return 0;
+end
+```
+
+呼び出し
+
+```text
+int a(int b){
+    log(b);
+    return 0;
+}
+a(8);
 ```
