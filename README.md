@@ -1,4 +1,4 @@
-# 最強言語AIO
+# 最強言語AIOC
 Cの型とRubyの混ぜてスパイスにJavaScriptを隠し味にPythonを加えた言語
 ## AIOの特徴
 複数言語に変換可能

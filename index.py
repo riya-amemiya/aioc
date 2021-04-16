@@ -8,6 +8,7 @@ a = "javascript"
 tab = 0
 funtype = "void"
 funs = {}
+variables = {}
 precedence = (    #計算の優先順位を決める
     ('left', 'PLUS', 'MINUS'),
     ('right', 'ASTERISK','SLASH'),
@@ -62,7 +63,7 @@ def p_input(p):
         elif p[1] == "char":
             char.CHAR(p, tab, a)
         elif p[1] == "float":
-            float.FLOAT(p,tab,a)
+            Float.FLOAT(p, tab, a)
     else:
         if a == "javascript":
             p[5] = f"window.prompt({p[7]}, "");"
@@ -78,7 +79,7 @@ def p_input(p):
         elif p[1] == "char":
             char.CHAR(p, tab, a)
         elif p[1] == "float":
-            float.FLOAT(p, tab, a)
+            Float.FLOAT(p, tab, a)
 
 def p_if(p):
     """expression : IF expression DOUBLEEQUAL expression FN
@@ -118,6 +119,10 @@ def p_expression_number(p):
     """expression : NUMBER"""
     p[0] = int(p[1])
 
+def p_expression_float(p):
+    """expression : NUMBER_FLOAT"""
+    p[0] = float(p[1])
+
 def p_string(p):
     """expression : STRING
                   | NAME
@@ -129,21 +134,53 @@ def p_char(p):
                   | CONST CHAR NAME EQUAL STRING SEMI
     """
     global tab
-    char.CHAR(p,tab,a)
+    global variables
+    char.CHAR(p,tab,a,variables)
 
 def p_float(p):
     """expression : FLOAT NAME EQUAL NUMBER_FLOAT SEMI
                   | CONST FLOAT NAME EQUAL NUMBER_FLOAT SEMI
     """
     global tab
-    float.FLOAT(p,tab,a)
+    global variables
+    Float.FLOAT(p, tab, a, variables)
 
 def p_int(p):
     """expression : INT NAME EQUAL NUMBER SEMI
                   | CONST INT NAME EQUAL NUMBER SEMI
     """
     global tab
-    Int.INT(p, tab, a)
+    global variables
+    Int.INT(p, tab, a,variables)
+
+def p_vs(p):
+    """expression : NAME EQUAL expression SEMI
+    """
+    global tab
+    global variables
+    try:
+        if variables[p[1]][1] == "const":
+            print("定数です!")
+        else:
+            if variables[p[1]][0] == "int":
+                try:
+                    p[0] = f"{p[1]}{p[2]}{int(p[3])}"
+                except:
+                    print("int型じゃありません")
+            elif variables[p[1]][0] == "float":
+                try:
+                    p[0] = f"{p[1]}{p[2]}{float(p[3])}"
+                except:
+                    print("float型じゃありません")
+            elif variables[p[1]][0] == "char":
+                try:
+                    int(p[3])
+                    float(p[3])
+                    print("char型じゃありません")
+                except:
+                    p[0] = f"{p[1]}{p[2]}{p[3]}"
+    except:
+        print(f"{p[1]}は宣言されてません")
 
 def p_fn(p):
     """expression : INT NAME FNR FNL FN
@@ -218,7 +255,7 @@ def p_cfn(p):
     for n in funs:
         if funs[n][1] and p[3] == ")":
             print(f"警告!\n引数{funs[n][1]}が渡されてません!")
-    if funs[n][1] and p[3] == ")":
+    if not funs[n][1] and p[3] == ")":
         if a == "javascript":
             p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
         elif a == "python":

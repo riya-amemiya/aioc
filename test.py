@@ -1,5 +1,2 @@
-def a():
-    print("Hello")
-
-
-a()
+a = 1.2
+a=1.3

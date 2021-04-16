@@ -1,3 +1,3 @@
 from . import Int
-from . import float
+from . import Float
 from . import char
