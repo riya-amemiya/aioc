@@ -20,7 +20,7 @@ log("Hello");
 /*or*/
 ("Hello");
 /*or*/
-l"Hello"
+l"Hello";
 ```
 
 ### 変数

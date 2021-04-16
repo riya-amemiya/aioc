@@ -1,2 +1,3 @@
-puts "Hello"
-A = gets.chomp.to_i
+for i in 0..9 do
+	puts i
+end

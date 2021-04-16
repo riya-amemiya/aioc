@@ -30,7 +30,15 @@ tokens = (
     'IF',
     'DOUBLEEQUAL',
     'COMMA',
-    'INPUT'
+    'INPUT',
+    'QUESTION',
+    'FOR',
+    'DOUBLEEPLUS',
+    'LTS',
+    'LTR',
+    'BREAK',
+    'PR',
+    'PL'
 )
 
 # t_STRING = '"[a-zA-Z][a-zA-Z0-9]*"'
@@ -39,6 +47,7 @@ t_ASTERISK = '\*'
 t_PERCENT = '%'
 t_SLASH = '/'
 t_PLUS = '\+'
+t_DOUBLEEPLUS = '\+\+'
 t_MINUS = '-'
 t_NUMBER = '[0-9]+'
 t_NUMBER_FLOAT = "[0-9]+\.[0-9]+"
@@ -46,17 +55,32 @@ t_LBRACE = '{'
 t_RBRACE = '}'
 t_SEMI = ';'
 t_FNL = '\)'
+t_LTS = '<'
+t_LTR = '>'
 t_FNR = '\('
 t_FN = ':'
+t_PR = '\['
+t_PL = '\]'
 t_DOUBLEEQUAL = "=="
 t_EQUAL = '='
 t_ignore = ' \t'
 t_NAME = '[a-zA-Z][a-zA-Z0-9]*'
 t_COMMA = ','
+t_QUESTION = '\?'
+
+
+def t_BREAK(t):
+    r"""break"""
+    return t
 
 
 def t_INPUT(t):
     r"""input"""
+    return t
+
+
+def t_FOR(t):
+    r"""for"""
     return t
 
 

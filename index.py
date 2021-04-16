@@ -27,12 +27,12 @@ except:
     print("Javascript")
 # exit function
 def p_log(p):
-    """expression : LOG FNR STRING FNL SEMI
-                  | FNR STRING FNL SEMI
-                  | SHORTLOG STRING SEMI
-                  | LOG FNR expression FNL SEMI
-                  | FNR expression FNL SEMI
-                  | SHORTLOG expression SEMI
+    """log : LOG FNR STRING FNL SEMI
+           | FNR STRING FNL SEMI
+           | SHORTLOG STRING SEMI
+           | LOG FNR expression FNL SEMI
+           | FNR expression FNL SEMI
+           | SHORTLOG expression SEMI
     """
 
     global tab
@@ -40,11 +40,11 @@ def p_log(p):
 
 def p_input(p):
     """expression : INT NAME EQUAL INPUT FNR STRING FNL SEMI
-                  | CONST INT NAME EQUAL INPUT FNR STRING FNL SEMI
-                  | CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
-                  | CONST CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
-                  | FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
-                  | CONST FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
+             | CONST INT NAME EQUAL INPUT FNR STRING FNL SEMI
+             | CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
+             | CONST CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
+             | FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
+             | CONST FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
     """
     global tab
     if p[1] != "const":
@@ -81,17 +81,32 @@ def p_input(p):
         elif p[1] == "float":
             Float.FLOAT(p, tab, a)
 
-def p_if(p):
-    """expression : IF expression DOUBLEEQUAL expression FN
-                  | IF expression DOUBLEEQUAL expression LBRACE
+def p_short_if(p):
+    """expression : expression QUESTION expression FN expression
     """
     global tab
     if a == "javascript":
-        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}" + "{"
+        p[0] = "\t" * tab + f"{p[1]} {p[2]} {p[3]} {p[4]} {p[5]}"
     elif a == "python":
-        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}:"
+        p[0] = "\t" * tab + f"{p[3]} if {p[1]} else {p[5]}"
     elif a == "ruby":
-        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}"
+        p[0] = "\t" * tab + f"{p[1]} {p[2]} {p[3]} {p[4]} {p[5]}"
+
+def p_doubleequal(p):
+    """doubleequal : expression DOUBLEEQUAL expression"""
+    p[0] = f"{p[1]}{p[2]}{p[3]}"
+
+def p_if(p):
+    """expression : IF FNR doubleequal FNL FN
+                  | IF FNR doubleequal FNL LBRACE
+    """
+    global tab
+    if a == "javascript":
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}{p[5]}" + "{"
+    elif a == "python":
+        p[0] = "\t" * tab + f"if {p[3]}{p[4]}{p[5]}:"
+    elif a == "ruby":
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}{p[5]}"
     tab += 1
 def p_expression_binop(p):
     """expression : expression PLUS expression
@@ -100,6 +115,7 @@ def p_expression_binop(p):
                   | expression SLASH expression
                   | expression PERCENT expression
     """
+    global tab
     try:
         int(p[3]);
         if p[2] == '+':
@@ -113,7 +129,33 @@ def p_expression_binop(p):
         elif p[2] == '%':
             p[0] = p[1] % p[3]
     except:
-        p[0] = f"{p[1]}{p[2]}{p[3]}"
+        p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
+
+def p_FOR_P(p):
+    """expression : NAME DOUBLEEPLUS
+    """
+    p[0] = f"{p[1]}{p[2]}"
+
+def p_BREAK(p):
+    """expression : BREAK SEMI
+    """
+    p[0] = "\t" * tab + f"{p[1]}{p[2]}"
+
+def p_FOR(p):
+    """expression : FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTS NUMBER SEMI expression FNL LBRACE
+                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTR NUMBER SEMI expression FNL LBRACE
+                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTS NUMBER SEMI expression FNL FN
+                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTR NUMBER SEMI expression FNL FN
+    """
+    global tab
+    if a == "javascript":
+        p[0] = "\t" * tab + f"for(let {p[4]}{p[5]}{p[6]}{p[7]}{p[8]}{p[9]}{p[10]}{p[11]}{p[12]})" + "{"
+    elif a == "python":
+        p[0] = "\t" * tab + f"for {p[4]} in range({p[6]},{p[10]}):"
+    elif a == "ruby":
+        p[0] = "\t" * tab + f"for {p[4]} in {p[6]}..{int(p[10])-1} do"
+    tab += 1
+
 
 def p_expression_number(p):
     """expression : NUMBER"""
@@ -123,10 +165,12 @@ def p_expression_float(p):
     """expression : NUMBER_FLOAT"""
     p[0] = float(p[1])
 
+def p_name(p):
+    """expression : NAME"""
+    p[0] = p[1]
+
 def p_string(p):
-    """expression : STRING
-                  | NAME
-    """
+    """expression : STRING"""
     p[0] = p[1]
 
 def p_char(p):
@@ -145,9 +189,14 @@ def p_float(p):
     global variables
     Float.FLOAT(p, tab, a, variables)
 
+def p_int_p(p):
+    """int_p : NUMBER COMMA NUMBER"""
+    p[0] = f"{p[1]}{p[2]}{p[3]}"
+
 def p_int(p):
     """expression : INT NAME EQUAL NUMBER SEMI
                   | CONST INT NAME EQUAL NUMBER SEMI
+                  | INT PR PL NAME EQUAL PR int_p PL
     """
     global tab
     global variables
@@ -216,18 +265,18 @@ def p_variable(p):
     """
     try:
         if a == "javascript":
-            p[0] = f"{p[2]}{p[3]}{p[4]}"
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
         elif a == "python":
-            p[0] = f"{p[2]}{p[3]}{p[4]}"
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
         elif a == "ruby":
-            p[0] = f"{p[2]}{p[3]}{p[4]}"
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
     except:
         if a == "javascript":
-            p[0] = f"{p[2]}"
+            p[0] = "\t" * tab + f"{p[2]}"
         elif a == "python":
-            p[0] = f"{p[2]}"
+            p[0] = "\t" * tab + f"{p[2]}"
         elif a == "ruby":
-            p[0] = f"{p[2]}"
+            p[0] = "\t" * tab + f"{p[2]}"
 
 
 def p_return(p):
@@ -241,7 +290,7 @@ def p_rbrace(p):
     global tab
     tab -= 1
     if a == "javascript":
-        p[0] = "\t" * tab + f"{p[1]}"
+        p[0] = "\t" * tab + "}"
     elif a == "python":
         p[0] = "\t" * tab + f""
     elif a == "ruby":
@@ -277,8 +326,9 @@ def p_comment(p):
 def p_end(p):
     """expression : END"""
     global tab
+    tab -= 1
     if a == "javascript":
-        p[0] = "\t" * tab + f"{p[1]}"
+        p[0] = "\t" * tab + "}"
     elif a == "python":
         p[0] = "\t" * tab + f""
     elif a == "ruby":
@@ -293,14 +343,14 @@ def p_error(token):
 def main():
     parser = yacc.yacc(debug=0, write_tables=0)
     result = []
-    with open('data.aioc', 'r') as fp:
+    with open(sys.argv[2], 'r') as fp:
         for line in fp:
             try:
                 result += [parser.parse(line)]
             except EOFError:
                 break
     result = [a for a in result if a != '']
-    with open(f'test.{"js" if a == "javascript" else "py" if a == "python" else "rb"}', mode='w') as f:
+    with open(f'{sys.argv[3]}.{"js" if a == "javascript" else "py" if a == "python" else "rb"}', mode='w') as f:
         f.write('\n'.join(result))
 
 if __name__ == '__main__':
