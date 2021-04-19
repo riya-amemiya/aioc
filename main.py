@@ -38,7 +38,9 @@ tokens = (
     'LTR',
     'BREAK',
     'PR',
-    'PL'
+    'PL',
+    'WHILE',
+    'NOTEQUAL'
 )
 
 # t_STRING = '"[a-zA-Z][a-zA-Z0-9]*"'
@@ -67,6 +69,17 @@ t_ignore = ' \t'
 t_NAME = '[a-zA-Z][a-zA-Z0-9]*'
 t_COMMA = ','
 t_QUESTION = '\?'
+t_NOTEQUAL = '!='
+
+
+def t_WHILE(t):
+    r"""while"""
+    return t
+
+
+def t_INT(t):
+    r"""int"""
+    return t
 
 
 def t_BREAK(t):
@@ -126,11 +139,6 @@ def t_LOG(t):
 
 def t_SHORTLOG(t):
     r"""l"""
-    return t
-
-
-def t_INT(t):
-    r"""int"""
     return t
 
 

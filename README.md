@@ -26,14 +26,14 @@ l"Hello";
 ### 変数
 定数にする時は先頭にconst
 ```text
-char s = "Hello"
-int age = 10
-float num = 13.1
+char s = "Hello";
+int age = 10;
+float num = 13.1;
 
 //定数
-const char s = "Hello"
-const int age = 10
-const float num = 13.1
+const char s = "Hello";
+const int age = 10;
+const float num = 13.1;
 ```
 
 ### 見にくいコード禁止!
@@ -78,4 +78,21 @@ int a(int b){
     return 0;
 }
 a(8);
+```
+
+## 標準入力
+
+```text
+const int name = input("名前を入力");
+```
+
+## forとbreak
+
+```text
+for (int i = 0;i < 10;i++):
+    li;
+    if (1 == i){
+        break;
+    end
+end
 ```

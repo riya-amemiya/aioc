@@ -27,12 +27,12 @@ except:
     print("Javascript")
 # exit function
 def p_log(p):
-    """log : LOG FNR STRING FNL SEMI
-           | FNR STRING FNL SEMI
-           | SHORTLOG STRING SEMI
-           | LOG FNR expression FNL SEMI
-           | FNR expression FNL SEMI
-           | SHORTLOG expression SEMI
+    """expression : LOG FNR STRING FNL SEMI
+                  | FNR STRING FNL SEMI
+                  | SHORTLOG STRING SEMI
+                  | LOG FNR expression FNL SEMI
+                  | FNR expression FNL SEMI
+                  | SHORTLOG expression SEMI
     """
 
     global tab
@@ -40,13 +40,14 @@ def p_log(p):
 
 def p_input(p):
     """expression : INT NAME EQUAL INPUT FNR STRING FNL SEMI
-             | CONST INT NAME EQUAL INPUT FNR STRING FNL SEMI
-             | CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
-             | CONST CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
-             | FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
-             | CONST FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CONST INT NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CONST CHAR NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
+                  | CONST FLOAT NAME EQUAL INPUT FNR STRING FNL SEMI
     """
     global tab
+    global variables
     if p[1] != "const":
         #p[0] = "\t" * tab + f"let {p[2]} {p[3]} {p[4]}{p[5]}"
         if a == "javascript":
@@ -59,11 +60,11 @@ def p_input(p):
             if p[1] == "int":
                 p[4] += ".to_i"
         if p[1] == "int":
-            Int.INT(p,tab,a)
+            Int.INT(p,tab,a,variables)
         elif p[1] == "char":
-            char.CHAR(p, tab, a)
+            char.CHAR(p, tab, a,variables)
         elif p[1] == "float":
-            Float.FLOAT(p, tab, a)
+            Float.FLOAT(p, tab, a,variables)
     else:
         if a == "javascript":
             p[5] = f"window.prompt({p[7]}, "");"
@@ -75,11 +76,11 @@ def p_input(p):
             if p[2] == "int":
                 p[5] += ".to_i"
         if p[2] == "int":
-            Int.INT(p, tab, a)
+            Int.INT(p, tab, a,variables)
         elif p[1] == "char":
-            char.CHAR(p, tab, a)
+            char.CHAR(p, tab, a,variables)
         elif p[1] == "float":
-            Float.FLOAT(p, tab, a)
+            Float.FLOAT(p, tab, a,variables)
 
 def p_short_if(p):
     """expression : expression QUESTION expression FN expression
@@ -93,18 +94,18 @@ def p_short_if(p):
         p[0] = "\t" * tab + f"{p[1]} {p[2]} {p[3]} {p[4]} {p[5]}"
 
 def p_doubleequal(p):
-    """doubleequal : expression DOUBLEEQUAL expression"""
+    """expression : expression DOUBLEEQUAL expression"""
     p[0] = f"{p[1]}{p[2]}{p[3]}"
 
 def p_if(p):
-    """expression : IF FNR doubleequal FNL FN
-                  | IF FNR doubleequal FNL LBRACE
+    """expression : IF FNR expression FNL FN
+                  | IF FNR expression FNL LBRACE
     """
     global tab
     if a == "javascript":
         p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}{p[5]}" + "{"
     elif a == "python":
-        p[0] = "\t" * tab + f"if {p[3]}{p[4]}{p[5]}:"
+        p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}:"
     elif a == "ruby":
         p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}{p[5]}"
     tab += 1
@@ -131,10 +132,36 @@ def p_expression_binop(p):
     except:
         p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
 
+def p_not(p):
+    """expression : expression NOTEQUAL expression"""
+    p[0] = f"{p[1]}{p[2]}{p[3]}"
+
+def p_while(p):
+    """expression : WHILE FNR expression FNL lf"""
+    global tab
+    if a == "javascript":
+        p[0] = "\t" * tab + f"while {p[2]}{p[3]}{p[4]}" + "{"
+    elif a == "python":
+        p[0] = "\t" * tab + f"while {p[3]}:"
+    elif a == "ruby":
+        p[0] = "\t" * tab + f"while {p[3]} do"
+    tab += 1
+
+def p_dp(p):
+    """expression : NAME DOUBLEEPLUS SEMI"""
+    global tab
+    p[0] = "\t" * tab + (f"{p[1]}{p[2]}" if a == "javascript" else f"{p[1]} += 1")
+
 def p_FOR_P(p):
-    """expression : NAME DOUBLEEPLUS
+    """for_p : NAME DOUBLEEPLUS
     """
     p[0] = f"{p[1]}{p[2]}"
+
+def p_LF(p):
+    """lf : LBRACE
+          | FN
+    """
+    p[0] = p[1]
 
 def p_BREAK(p):
     """expression : BREAK SEMI
@@ -142,10 +169,8 @@ def p_BREAK(p):
     p[0] = "\t" * tab + f"{p[1]}{p[2]}"
 
 def p_FOR(p):
-    """expression : FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTS NUMBER SEMI expression FNL LBRACE
-                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTR NUMBER SEMI expression FNL LBRACE
-                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTS NUMBER SEMI expression FNL FN
-                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTR NUMBER SEMI expression FNL FN
+    """expression : FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTS NUMBER SEMI for_p FNL lf
+                  | FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTR NUMBER SEMI for_p FNL lf
     """
     global tab
     if a == "javascript":
@@ -190,7 +215,10 @@ def p_float(p):
     Float.FLOAT(p, tab, a, variables)
 
 def p_int_p(p):
-    """int_p : NUMBER COMMA NUMBER"""
+    """int_p : NUMBER COMMA NUMBER
+             | int_p COMMA NUMBER
+             | int_p COMMA int_p
+    """
     p[0] = f"{p[1]}{p[2]}{p[3]}"
 
 def p_int(p):
@@ -232,22 +260,14 @@ def p_vs(p):
         print(f"{p[1]}は宣言されてません")
 
 def p_fn(p):
-    """expression : INT NAME FNR FNL FN
-                  | INT NAME FNR FNL LBRACE
-                  | CHAR NAME FNR FNL FN
-                  | CHAR NAME FNR FNL LBRACE
-                  | FLOAT NAME FNR FNL FN
-                  | FLOAT NAME FNR FNL LBRACE
-                  | VOID NAME FNR FNL FN
-                  | VOID NAME FNR FNL LBRACE
-                  | INT NAME FNR expression FNL FN
-                  | INT NAME FNR expression FNL LBRACE
-                  | CHAR NAME FNR expression FNL FN
-                  | CHAR NAME FNR expression FNL LBRACE
-                  | FLOAT NAME FNR expression FNL FN
-                  | FLOAT NAME FNR expression FNL LBRACE
-                  | VOID NAME FNR expression FNL FN
-                  | VOID NAME FNR expression FNL LBRACE
+    """expression : INT NAME FNR FNL lf
+                  | CHAR NAME FNR FNL lf
+                  | FLOAT NAME FNR FNL lf
+                  | VOID NAME FNR FNL lf
+                  | INT NAME FNR variable FNL lf
+                  | CHAR NAME FNR variable FNL lf
+                  | FLOAT NAME FNR variable FNL lf
+                  | VOID NAME FNR variable FNL lf
     """
     global tab
     global funtype
@@ -258,11 +278,61 @@ def p_fn(p):
     tab += 1
 
 def p_variable(p):
-    """expression : INT NAME
-                  | INT NAME COMMA expression
-                  | INT NAME EQUAL NUMBER
-                  | INT NAME EQUAL NUMBER COMMA expression
+    """variable : float_variable
+                | char_variable
+                | int_variable
+                | variable COMMA variable
     """
+    try:
+        p[0] = f"{p[1]}{p[2]}{p[3]}"
+    except:
+        p[0] = f"{p[1]}"
+
+def p_float_variable(p):
+    """float_variable : FLOAT NAME
+                      | FLOAT NAME EQUAL STRING
+    """
+    global tab
+    try:
+        if a == "javascript":
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
+        elif a == "python":
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
+        elif a == "ruby":
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
+    except:
+        if a == "javascript":
+            p[0] = "\t" * tab + f"{p[2]}"
+        elif a == "python":
+            p[0] = "\t" * tab + f"{p[2]}"
+        elif a == "ruby":
+            p[0] = "\t" * tab + f"{p[2]}"
+
+def p_char_variable(p):
+    """char_variable : CHAR NAME
+                     | CHAR NAME EQUAL STRING
+    """
+    global tab
+    try:
+        if a == "javascript":
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
+        elif a == "python":
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
+        elif a == "ruby":
+            p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
+    except:
+        if a == "javascript":
+            p[0] = "\t" * tab + f"{p[2]}"
+        elif a == "python":
+            p[0] = "\t" * tab + f"{p[2]}"
+        elif a == "ruby":
+            p[0] = "\t" * tab + f"{p[2]}"
+
+def p_int_variable(p):
+    """int_variable : INT NAME
+                    | INT NAME EQUAL NUMBER
+    """
+    global tab
     try:
         if a == "javascript":
             p[0] = "\t" * tab + f"{p[2]}{p[3]}{p[4]}"
@@ -300,7 +370,6 @@ def p_cfn(p):
                   | NAME FNR expression FNL SEMI
     """
     global tab
-    tab -= 1
     for n in funs:
         if funs[n][1] and p[3] == ")":
             print(f"警告!\n引数{funs[n][1]}が渡されてません!")
