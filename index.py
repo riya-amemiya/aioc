@@ -1,18 +1,20 @@
+from typing import Tuple
+
 import ply.yacc as yacc
 from main import tokens
 from variable import *
 from console import *
 from function import *
 import sys
+
 a = "javascript"
 tab = 0
 funtype = "void"
 funs = {}
 variables = {}
-precedence = (    #計算の優先順位を決める
+precedence = (  # 計算の優先順位を決める
     ('left', 'PLUS', 'MINUS'),
-    ('right', 'ASTERISK','SLASH'),
-    ('right', 'PERCENT')
+    ('right', 'ASTERISK', 'SLASH', 'PERCENT')
 )
 try:
     if sys.argv[1] == "js":
@@ -22,10 +24,11 @@ try:
     elif sys.argv[1] == "py":
         a = "python"
     else:
-        a  = sys.argv[1]
+        a = sys.argv[1]
 except:
-    print("Javascript")
-# exit function
+    print("Error")
+
+
 def p_log(p):
     """expression : LOG FNR STRING FNL SEMI
                   | FNR STRING FNL SEMI
@@ -34,9 +37,9 @@ def p_log(p):
                   | FNR expression FNL SEMI
                   | SHORTLOG expression SEMI
     """
-
     global tab
-    log.LOG(p,tab,a)
+    log.LOG(p, tab, a)
+
 
 def p_input(p):
     """expression : INT NAME EQUAL INPUT FNR STRING FNL SEMI
@@ -60,11 +63,11 @@ def p_input(p):
             if p[1] == "int":
                 p[4] += ".to_i"
         if p[1] == "int":
-            Int.INT(p,tab,a,variables)
+            Int.INT(p, tab, a, variables)
         elif p[1] == "char":
-            char.CHAR(p, tab, a,variables)
+            char.CHAR(p, tab, a, variables)
         elif p[1] == "float":
-            Float.FLOAT(p, tab, a,variables)
+            Float.FLOAT(p, tab, a, variables)
     else:
         if a == "javascript":
             p[5] = f"window.prompt({p[7]}, "");"
@@ -76,11 +79,12 @@ def p_input(p):
             if p[2] == "int":
                 p[5] += ".to_i"
         if p[2] == "int":
-            Int.INT(p, tab, a,variables)
+            Int.INT(p, tab, a, variables)
         elif p[1] == "char":
-            char.CHAR(p, tab, a,variables)
+            char.CHAR(p, tab, a, variables)
         elif p[1] == "float":
-            Float.FLOAT(p, tab, a,variables)
+            Float.FLOAT(p, tab, a, variables)
+
 
 def p_short_if(p):
     """expression : expression QUESTION expression FN expression
@@ -93,9 +97,11 @@ def p_short_if(p):
     elif a == "ruby":
         p[0] = "\t" * tab + f"{p[1]} {p[2]} {p[3]} {p[4]} {p[5]}"
 
+
 def p_doubleequal(p):
     """expression : expression DOUBLEEQUAL expression"""
     p[0] = f"{p[1]}{p[2]}{p[3]}"
+
 
 def p_if(p):
     """expression : IF FNR expression FNL FN
@@ -109,6 +115,8 @@ def p_if(p):
     elif a == "ruby":
         p[0] = "\t" * tab + f"if {p[2]}{p[3]}{p[4]}{p[5]}"
     tab += 1
+
+
 def p_expression_binop(p):
     """expression : expression PLUS expression
                   | expression MINUS expression
@@ -118,7 +126,7 @@ def p_expression_binop(p):
     """
     global tab
     try:
-        int(p[3]);
+        int(p[3])
         if p[2] == '+':
             p[0] = p[1] + p[3]
         elif p[2] == '-':
@@ -132,9 +140,11 @@ def p_expression_binop(p):
     except:
         p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}"
 
+
 def p_not(p):
     """expression : expression NOTEQUAL expression"""
     p[0] = f"{p[1]}{p[2]}{p[3]}"
+
 
 def p_while(p):
     """expression : WHILE FNR expression FNL lf"""
@@ -147,15 +157,19 @@ def p_while(p):
         p[0] = "\t" * tab + f"while {p[3]} do"
     tab += 1
 
+
 def p_dp(p):
     """expression : NAME DOUBLEEPLUS SEMI"""
     global tab
-    p[0] = "\t" * tab + (f"{p[1]}{p[2]}" if a == "javascript" else f"{p[1]} += 1")
+    p[0] = "\t" * tab + (f"{p[1]}{p[2]}" if a ==
+                                            "javascript" else f"{p[1]} += 1")
+
 
 def p_FOR_P(p):
     """for_p : NAME DOUBLEEPLUS
     """
     p[0] = f"{p[1]}{p[2]}"
+
 
 def p_LF(p):
     """lf : LBRACE
@@ -163,10 +177,12 @@ def p_LF(p):
     """
     p[0] = p[1]
 
+
 def p_BREAK(p):
     """expression : BREAK SEMI
     """
     p[0] = "\t" * tab + f"{p[1]}{p[2]}"
+
 
 def p_FOR(p):
     """expression : FOR FNR INT NAME EQUAL NUMBER SEMI NAME LTS NUMBER SEMI for_p FNL lf
@@ -174,7 +190,8 @@ def p_FOR(p):
     """
     global tab
     if a == "javascript":
-        p[0] = "\t" * tab + f"for(let {p[4]}{p[5]}{p[6]}{p[7]}{p[8]}{p[9]}{p[10]}{p[11]}{p[12]})" + "{"
+        p[0] = "\t" * tab + \
+               f"for(let {p[4]}{p[5]}{p[6]}{p[7]}{p[8]}{p[9]}{p[10]}{p[11]}{p[12]})" + "{"
     elif a == "python":
         p[0] = "\t" * tab + f"for {p[4]} in range({p[6]},{p[10]}):"
     elif a == "ruby":
@@ -186,17 +203,21 @@ def p_expression_number(p):
     """expression : NUMBER"""
     p[0] = int(p[1])
 
+
 def p_expression_float(p):
     """expression : NUMBER_FLOAT"""
     p[0] = float(p[1])
+
 
 def p_name(p):
     """expression : NAME"""
     p[0] = p[1]
 
+
 def p_string(p):
     """expression : STRING"""
     p[0] = p[1]
+
 
 def p_char(p):
     """expression : CHAR NAME EQUAL STRING SEMI
@@ -204,7 +225,8 @@ def p_char(p):
     """
     global tab
     global variables
-    char.CHAR(p,tab,a,variables)
+    char.CHAR(p, tab, a, variables)
+
 
 def p_float(p):
     """expression : FLOAT NAME EQUAL NUMBER_FLOAT SEMI
@@ -214,12 +236,14 @@ def p_float(p):
     global variables
     Float.FLOAT(p, tab, a, variables)
 
+
 def p_int_p(p):
     """int_p : NUMBER COMMA NUMBER
              | int_p COMMA NUMBER
              | int_p COMMA int_p
     """
     p[0] = f"{p[1]}{p[2]}{p[3]}"
+
 
 def p_int(p):
     """expression : INT NAME EQUAL NUMBER SEMI
@@ -228,7 +252,8 @@ def p_int(p):
     """
     global tab
     global variables
-    Int.INT(p, tab, a,variables)
+    Int.INT(p, tab, a, variables)
+
 
 def p_vs(p):
     """expression : NAME EQUAL expression SEMI
@@ -259,6 +284,7 @@ def p_vs(p):
     except:
         print(f"{p[1]}は宣言されてません")
 
+
 def p_fn(p):
     """expression : INT NAME FNR FNL lf
                   | CHAR NAME FNR FNL lf
@@ -272,10 +298,11 @@ def p_fn(p):
     global tab
     global funtype
     global funs
-    funs[p[2]] = [p[1],p[4] if p[4] != ")" else ""]
+    funs[p[2]] = [p[1], p[4] if p[4] != ")" else ""]
     funtype = p[1]
-    function.FUN(p,tab,a)
+    function.FUN(p, tab, a)
     tab += 1
+
 
 def p_variable(p):
     """variable : float_variable
@@ -287,6 +314,7 @@ def p_variable(p):
         p[0] = f"{p[1]}{p[2]}{p[3]}"
     except:
         p[0] = f"{p[1]}"
+
 
 def p_float_variable(p):
     """float_variable : FLOAT NAME
@@ -308,6 +336,7 @@ def p_float_variable(p):
         elif a == "ruby":
             p[0] = "\t" * tab + f"{p[2]}"
 
+
 def p_char_variable(p):
     """char_variable : CHAR NAME
                      | CHAR NAME EQUAL STRING
@@ -327,6 +356,7 @@ def p_char_variable(p):
             p[0] = "\t" * tab + f"{p[2]}"
         elif a == "ruby":
             p[0] = "\t" * tab + f"{p[2]}"
+
 
 def p_int_variable(p):
     """int_variable : INT NAME
@@ -353,7 +383,8 @@ def p_return(p):
     """expression : RETURN expression SEMI"""
     global tab
     global funtype
-    RETURN.RETURN(p, tab, a,funtype)
+    RETURN.RETURN(p, tab, a, funtype)
+
 
 def p_rbrace(p):
     """expression : RBRACE"""
@@ -365,6 +396,8 @@ def p_rbrace(p):
         p[0] = "\t" * tab + f""
     elif a == "ruby":
         p[0] = "\t" * tab + f"end"
+
+
 def p_cfn(p):
     """expression : NAME FNR FNL SEMI
                   | NAME FNR expression FNL SEMI
@@ -388,9 +421,11 @@ def p_cfn(p):
         elif a == "ruby":
             p[0] = "\t" * tab + f"{p[1]}{p[2]}{p[3]}{p[4]}"
 
+
 def p_comment(p):
     """expression : COMMENT"""
     p[0] = ""
+
 
 def p_end(p):
     """expression : END"""
@@ -403,11 +438,14 @@ def p_end(p):
     elif a == "ruby":
         p[0] = "\t" * tab + f"end"
 
+
 def p_error(token):
     if token is not None:
-        print(f"Line {token.lineno}, illegal token {token.value} type {token.type}")
+        print(
+            f"Line {token.lineno}, illegal token {token.value} type {token.type}")
     else:
         print('Unexpected end of input')
+
 
 def main():
     parser = yacc.yacc(debug=0, write_tables=0)
@@ -422,8 +460,7 @@ def main():
     with open(f'{sys.argv[3]}.{"js" if a == "javascript" else "py" if a == "python" else "rb"}', mode='w') as f:
         f.write('\n'.join(result))
 
+
 if __name__ == '__main__':
-    #yacc_test()
+    # yacc_test()
     main()
-
-
